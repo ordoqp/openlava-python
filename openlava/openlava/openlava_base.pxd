@@ -19,12 +19,13 @@ from libc.stdio cimport *
 
 cdef extern from "Python.h":
     ctypedef struct FILE
-    FILE* PyFile_AsFile(object)
     void fprintf(FILE* f, char* s, char* s)
 
-cdef extern from "fileobject.h":
-    ctypedef class __builtin__.file [object PyFileObject]:
-        pass
+cdef extern from "fileshim.h":
+     FILE* py3c_PyFile_AsFileWithMode(object, char *)
+
+
+
 
 cdef extern from "lsbatch.h":
 

@@ -67,8 +67,14 @@ import cython
 cimport openlava_base
 from traceback import print_stack
 from libc.stdlib cimport realloc, malloc, free
-from libc.string cimport strcmp, memset, strcpy
-from cpython.string cimport PyString_AsString
+from libc.string cimport strcmp, memset, strcpy, strlen
+from cpython.version cimport PY_MAJOR_VERSION
+if PY_MAJOR_VERSION >= 3:
+   from cpython.bytes cimport PyBytes_AsString
+else:
+   from cpython.string cimport PyString_AsString
+   
+
 from cpython cimport bool
 cimport openlava_base
 from openlava.lslib import ls_perror, LSF_RLIM_NLIMITS, DEFAULT_RLIMIT
@@ -76,12 +82,13 @@ from openlava.lslib import ls_perror, LSF_RLIM_NLIMITS, DEFAULT_RLIMIT
 
 cdef extern from "Python.h":
     ctypedef struct FILE
-    FILE* PyFile_AsFile(object)
     void fprintf(FILE* f, char* s, char* s)
 
-cdef extern from "fileobject.h":
-    ctypedef class __builtin__.file [object PyFileObject]:
-        pass
+cdef extern from "fileshim.h":
+     FILE* py3c_PyFile_AsFileWithMode(object, char *)
+
+
+
 
 
 cdef extern from "lsbatch.h":
@@ -1299,7 +1306,10 @@ cdef char ** to_cstring_array(list_str):
     if ret==NULL:
         raise MemoryError()
     for i in xrange(len(list_str)):
-        ret[i] = PyString_AsString(list_str[i])
+        if PY_MAJOR_VERSION >= 3:
+           ret[i] = PyBytes_AsString(list_str[i])
+        else:
+           ret[i] = PyString_AsString(list_str[i])
     return ret
 
 cdef int * to_int_array(list_int):
@@ -1376,7 +1386,7 @@ def lsb_geteventrec(fh, line_number):
     cdef int ln
     ln=line_number
     cdef FILE * cfh
-    cfh=PyFile_AsFile(fh)
+    cfh=py3c_PyFile_AsFileWithMode(fh,"r")
     er = openlava_base.lsb_geteventrec(cfh, &ln)
     if er == NULL:
         return None
@@ -1530,7 +1540,11 @@ Get information about jobs that match the specified criteria.
         raise Exception("closejobinfo has not been called after previous openjobinfo call")
     _OPENJOBINFO_COUNT = True
     cdef int numJob
-    numJobs=openlava_base.lsb_openjobinfo(job_id,job_name,user,queue,host,options)
+    job_name_ = job_name.encode()
+    user_ = user.encode()
+    queue_ = queue.encode()
+    host_ = host.encode()
+    numJobs=openlava_base.lsb_openjobinfo(job_id,job_name_,user_,queue_,host_,options)
     return numJobs
 
 
@@ -2617,10 +2631,14 @@ cdef class Submit:
             self._data.userPriority=-1
 
     cdef char * _copy(self, char * dest, src_p):
-        src_p=str(src_p)
+      
         cdef char * src
-        length = len(src_p)
-        src = src_p
+        if PY_MAJOR_VERSION >= 3:
+            src = PyBytes_AsString(src_p)
+        else:
+            src = PyString_AsString(src_p)
+        length = strlen(src)+1
+        
         if dest != NULL:
             free(dest)
         dest = <char *>malloc(sizeof(char) * length)

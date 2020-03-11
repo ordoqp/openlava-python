@@ -25,7 +25,7 @@ try:
 	lsfdir=os.path.join(libdir,"..")
 
 except:
-	lsfdir='/opt/openlava'
+	lsfdir='/lsf'
 
 lsf=os.path.join(lsfdir, "lib", "liblsf.a")
 lsbatch=os.path.join(lsfdir, "lib", "liblsbatch.a")

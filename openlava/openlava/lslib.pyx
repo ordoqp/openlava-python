@@ -65,7 +65,11 @@ Members
 import cython
 from libc.stdlib cimport malloc, free
 from libc.string cimport strcmp, memset
-from cpython.string cimport PyString_AsString
+from cpython.version cimport PY_MAJOR_VERSION
+if PY_MAJOR_VERSION >= 3:
+	from cpython.bytes cimport PyBytes_AsString
+else:
+	from cpython.string cimport PyString_AsString
 
 cimport openlava_base
 
@@ -801,7 +805,10 @@ Returns true as long as the RES and SBD are not down
 cdef char ** to_cstring_array(list_str):
 	cdef char **ret = <char **>malloc(len(list_str) * sizeof(char *))
 	for i in xrange(len(list_str)):
-		ret[i] = PyString_AsString(list_str[i])
+		if PY_MAJOR_VERSION >= 3:
+			ret[i] = PyBytes_AsString(list_str[i])
+		else:
+			ret[i] = PyString_AsString(list_str[i])
 	return ret
 
 
