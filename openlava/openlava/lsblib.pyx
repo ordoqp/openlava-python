@@ -94,6 +94,8 @@ def encode_string(s):
     return s
 
 
+
+
 cdef extern from "lsbatch.h":
     ctypedef long long int LS_LONG_INT
     ctypedef unsigned long long LS_UNS_LONG_INT
@@ -1310,6 +1312,7 @@ cdef char ** to_cstring_array(list_str):
         raise MemoryError()
     for i in xrange(len(list_str)):
         if PY_MAJOR_VERSION >= 3:
+           #str_p = str(list_str[i])
            ret[i] = PyBytes_AsString(list_str[i])
         else:
            ret[i] = PyString_AsString(list_str[i])
@@ -1492,7 +1495,7 @@ Initialize the lsb library
     0
 
 """
-    return openlava_base.lsb_init(appName)
+    return openlava_base.lsb_init(encode_string(appName))
 
 def lsb_modify(jobSubReq, jobSubReply, jobId):
     """openlava.lsblib.lsb_modify(jobSubReq, jobSubReply, jobId)
@@ -2690,17 +2693,16 @@ cdef class Submit:
         def __get__(self):
             return [u'%s' % self._data.askedHosts[i] for i in range(self.numAskedHosts)]
         def __set__(self,hosts):
-	    #hosts_ = [encode_string(s) for s in hosts]
-            self._data.askedHosts=to_cstring_array(hosts)
+            hosts_tmp = [encode_string(s) for s in hosts]
+            self._data.askedHosts=to_cstring_array(hosts_tmp)
             self._data.numAskedHosts=len(hosts)
-
 
     property resReq:
         def __get__(self):
             return u'%s' % self._data.resReq
         def __set__(self,v):
             self._check_set()
-            self._data.resReq=self._copy(self._data.resReq, v)
+            self._data.resReq=self._copy(self._data.resReq, encode_string(v))
 
     property rLimits:
         def __get__(self):
@@ -2807,7 +2809,7 @@ cdef class Submit:
             return u'%s' % self._data.chkpntDir
         def __set__(self,v):
             self._check_set()
-            self._data.chkpntDir=self._copy(self._data.chkpntDir, v)
+            self._data.chkpntDir=self._copy(self._data.chkpntDir, encode_string(v))
 
     property nxf:
         def __get__(self):
@@ -2846,14 +2848,14 @@ cdef class Submit:
             return u'%s' % self._data.preExecCmd
         def __set__(self,v):
             self._check_set()
-            self._data.preExecCmd=self._copy(self._data.preExecCmd, v)
+            self._data.preExecCmd=self._copy(self._data.preExecCmd, encode_string(v))
 
     property mailUser:
         def __get__(self):
             return u'%s' % self._data.mailUser
         def __set__(self,v):
             self._check_set()
-            self._data.mailUser=self._copy(self._data.mailUser, v)
+            self._data.mailUser=self._copy(self._data.mailUser, encode_string(v))
 
     property delOptions:
         def __get__(self):
@@ -2876,7 +2878,7 @@ cdef class Submit:
             return u'%s' % self._data.projectName
         def __set__(self,v):
             self._check_set()
-            self._data.projectName=self._copy(self._data.projectName, v)
+            self._data.projectName=self._copy(self._data.projectName, encode_string(v))
 
     property maxNumProcessors:
         def __get__(self):
@@ -2891,7 +2893,7 @@ cdef class Submit:
             return u'%s' % self._data.loginShell
         def __set__(self,v):
             self._check_set()
-            self._data.loginShell=self._copy(self._data.loginShell, v)
+            self._data.loginShell=self._copy(self._data.loginShell, encode_string(v))
 
     property userPriority:
         def __get__(self):
