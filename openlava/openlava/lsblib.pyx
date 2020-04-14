@@ -88,7 +88,10 @@ cdef extern from "fileshim.h":
      FILE* py3c_PyFile_AsFileWithMode(object, char *)
 
 
-
+def encode_string(s):
+    if type(s) == str:
+       return s.encode()
+    return s
 
 
 cdef extern from "lsbatch.h":
@@ -2669,14 +2672,14 @@ cdef class Submit:
             return u'%s' % self._data.jobName
         def __set__(self,v):
             self._check_set()
-            self._data.jobName=self._copy(self._data.jobName, v)
+            self._data.jobName=self._copy(self._data.jobName, encode_string(v))
 
     property queue:
         def __get__(self):
             return u"%s" % self._data.queue
         def __set__(self,v):
             self._check_set()
-            self._data.queue = self._copy(self._data.queue, v)
+            self._data.queue = self._copy(self._data.queue, encode_string(v))
 
     property numAskedHosts:
         def __get__(self):
@@ -2687,6 +2690,7 @@ cdef class Submit:
         def __get__(self):
             return [u'%s' % self._data.askedHosts[i] for i in range(self.numAskedHosts)]
         def __set__(self,hosts):
+	    #hosts_ = [encode_string(s) for s in hosts]
             self._data.askedHosts=to_cstring_array(hosts)
             self._data.numAskedHosts=len(hosts)
 
@@ -2714,7 +2718,7 @@ cdef class Submit:
             return u'%s' % self._data.hostSpec
         def __set__(self,v):
             self._check_set()
-            self._data.hostSpec=self._copy(self._data.hostSpec, v)
+            self._data.hostSpec=self._copy(self._data.hostSpec, encode_string(v))
 
     property numProcessors:
         def __get__(self):
@@ -2729,7 +2733,7 @@ cdef class Submit:
             return u'%s' % self._data.dependCond
         def __set__(self,v):
             self._check_set()
-            self._data.dependCond=self._copy(self._data.dependCond, v)
+            self._data.dependCond=self._copy(self._data.dependCond, encode_string(v))
 
     property beginTime:
         def __get__(self):
@@ -2760,35 +2764,35 @@ cdef class Submit:
             return u'%s' % self._data.inFile
         def __set__(self,v):
             self._check_set()
-            self._data.inFile=self._copy(self._data.inFile, v)
+            self._data.inFile=self._copy(self._data.inFile, encode_string(v))
 
     property outFile:
         def __get__(self):
             return u'%s' % self._data.outFile
         def __set__(self,v):
             self._check_set()
-            self._data.outFile=self._copy(self._data.outFile, v)
+            self._data.outFile=self._copy(self._data.outFile, encode_string(v))
 
     property errFile:
         def __get__(self):
             return u'%s' % self._data.errFile
         def __set__(self,v):
             self._check_set()
-            self._data.errFile=self._copy(self._data.errFile, v)
+            self._data.errFile=self._copy(self._data.errFile, encode_string(v))
 
     property command:
         def __get__(self):
             return u'%s' % self._data.command
         def __set__(self,v):
             self._check_set()
-            self._data.command=self._copy(self._data.command, v)
+            self._data.command=self._copy(self._data.command, encode_string(v))
 
     property newCommand:
         def __get__(self):
             return u'%s' % self._data.newCommand
         def __set__(self,v):
             self._check_set()
-            self._data.newCommand=self._copy(self._data.newCommand, v)
+            self._data.newCommand=self._copy(self._data.newCommand, encode_string(v))
 
     property chkpntPeriod:
         def __get__(self):
